@@ -277,12 +277,125 @@ ROLLBACK;
 ```
 
 
+# ESERCIZI CON GROUP BY 
+
+    Esercizio 1: Trova il numero di prodotti in ogni categoria.
+
+
+```
+
+SELECT pc.Name AS CategoryName, COUNT(*) AS NumberOfProducts
+FROM Production.ProductCategory AS pc
+JOIN Production.ProductSubcategory AS psc ON pc.ProductCategoryID = psc.ProductCategoryID
+JOIN Production.Product AS p ON psc.ProductSubcategoryID = p.ProductSubcategoryID
+GROUP BY pc.Name;
+
+
+```
+
+
+Esercizio 2: Calcola il costo medio dei prodotti per ogni categoria che abbia almeno 5 prodotti.
+
+```
+SELECT pc.Name AS CategoryName, AVG(p.StandardCost) AS AverageCost
+FROM Production.ProductCategory AS pc
+JOIN Production.ProductSubcategory AS psc ON pc.ProductCategoryID = psc.ProductCategoryID
+JOIN Production.Product AS p ON psc.ProductSubcategoryID = p.ProductSubcategoryID
+GROUP BY pc.Name
+HAVING COUNT(*) >= 5;
+```
+
+
+Esercizio 3: Trova il totale dei prezzi di listino per prodotti in ogni colore.
+```
+SELECT Color, SUM(ListPrice) AS TotalListPrice
+FROM Production.Product
+GROUP BY Color;
+
+```
+
+
+```
+Esercizio 4: Trova il numero di ordini effettuati ogni anno.
+
+
+SELECT YEAR(OrderDate) AS OrderYear, COUNT(*) AS NumberOfOrders
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate);
+
+
+```
+
+
+Esercizio 5: Trova il totale delle quantità vendute per ogni prodotto.
+
+```
+SELECT ProductID, SUM(OrderQty) AS TotalQuantity
+FROM Sales.SalesOrderDetail
+GROUP BY ProductID;
+
+
+```
+
+
+
+Esercizio 6: Trova il totale venduto per ogni venditore che abbia venduto più di 100 articoli.
+
+
+```
+
+SELECT SalesPersonID, SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader
+GROUP BY SalesPersonID
+HAVING SUM(TotalDue) > 100;
+
+
+```
 
 
 
 
+Esercizio 7: Trova il totale delle ore lavorate per ogni tipo di operazione di lavoro.
 
 
+```
+SELECT OperationSequence, SUM(ActualResourceHrs) AS TotalHours
+FROM Production.WorkOrderRouting
+GROUP BY OperationSequence;
+
+```
+
+
+Esercizio 8: Conta il numero di clienti per ogni tipo di cliente, ma solo per i tipi che hanno più di 10 clienti.
+
+```
+
+SELECT CustomerType, COUNT(*) AS NumberOfCustomers
+FROM Sales.Customer
+GROUP BY CustomerType
+HAVING COUNT(*) > 10;
+
+
+```
+
+
+
+    Esercizio 9: Trova il numero di dipendenti in ogni ruolo di job.
+
+```
+SELECT JobTitle, COUNT(*) AS NumberOfEmployees
+FROM HumanResources.Employee
+GROUP BY JobTitle;
+```
+
+
+    Esercizio 10: Trova la media dei saldi dei conti (Account Receivable) per ogni cliente, ma solo per i clienti che hanno un saldo medio superiore a 1000.
+```
+SELECT CustomerID, AVG(AccountReceivable) AS AverageBalance
+FROM Sales.CustomerAccount
+GROUP BY CustomerID
+HAVING AVG(AccountReceivable) > 1000;
+```
 
 
 
