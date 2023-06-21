@@ -406,5 +406,92 @@ HAVING AVG(AccountReceivable) > 1000;
 ```
 
 
+# SUBQUERY :
+
+
+Le subquery, o query nidificate, sono query SQL che sono inserite all'interno di un'altra query SQL. Una subquery può essere utilizzata in diverse parti della query principale come nelle clausole SELECT, FROM, WHERE, o HAVING.
+
+Le subquery sono utilizzate per diversi scopi, come:
+
+    Filtrare risultati basati su dati aggregati.
+    Recuperare dati per un confronto che non può essere fatto direttamente.
+    Semplificare le query complesse decomponendole in parti più piccole e gestibili.
+
+
+
+## Tipi di Subquery
+
+    Subquery Scalar: Ritornano un singolo valore. Queste possono essere utilizzate in qualsiasi luogo in cui ti aspetti un valore singolo, come in una clausola di confronto.
+
+```
+
+SELECT * FROM Products
+WHERE price > (
+    SELECT AVG(price) FROM Products
+);
+
+```
+
+
+Subquery in clausola FROM: Puoi utilizzare una subquery come una tabella in una clausola FROM.
+
+```
+SELECT AVG(Price)
+FROM (
+    SELECT Price FROM Products WHERE Category = 'Bicycles'
+) AS BicyclePrices;
+```
+
+Subquery in clausola IN: Queste subquery ritornano un set di valori che vengono poi utilizzati per il filtraggio nella query principale.
+
+
+```
+SELECT * FROM Orders
+WHERE CustomerID IN (
+    SELECT CustomerID FROM Customers WHERE Country = 'USA'
+);
+
+```
+
+
+Subquery correlate: Sono subquery che fanno riferimento a una o più colonne della query esterna. Queste sono eseguite una volta per ogni riga processata dalla query esterna.
+
+
+```
+SELECT e.Name, e.Salary
+FROM Employees e
+WHERE e.Salary > (
+    SELECT AVG(e2.Salary)
+    FROM Employees e2
+    WHERE e.DepartmentID = e2.DepartmentID
+);
+
+
+```
+
+Strategie per utilizzare le Subquery
+
+Scomposizione di problemi complessi: Utilizza subquery per scomporre problemi di query complessi in passi più piccoli e gestibili.
+Migliora la leggibilità: Utilizza subquery per migliorare la leggibilità separando logicamente diverse parti della query.
+
+Utilizza subquery correlate con cautela: Le subquery correlate possono avere gravi impatti sulle prestazioni, in quanto vengono eseguite per ogni riga nella query esterna.
+
+Evita subquery non necessarie: Se una subquery può essere riscritta utilizzando JOINs o altre tecniche senza impatto sulla leggibilità o la logica, allora generalmente dovresti preferire la versione senza subquery per motivi di prestazioni.
+
+Test ed ottimizzazione: Esegui test sulle prestazioni delle tue query nidificate e ottimizzale se necessario. A volte, piccoli cambiamenti nella struttura di una subquery possono portare a miglioramenti significativi delle prestazioni.
+
+
+Seleziona i prodotti che sono stati venduti in quantità superiore a 10 in un unico ordine.
+
+```
+SELECT ProductID, Name
+FROM Production.Product
+WHERE ProductID IN (
+    SELECT ProductID
+    FROM Sales.SalesOrderDetail
+    WHERE OrderQty > 10
+);
+```
+
 
 
