@@ -53,7 +53,7 @@ WHERE SO.OrderDate > '2014-01-01';
 ```
 
 
-Esercizio 5: Seleziona i prodotti che hanno un prezzo di listino superiore a un certo valore (ad es. 1000).
+## Esercizio 5: Seleziona i prodotti che hanno un prezzo di listino superiore a un certo valore (ad es. 1000).
 
 ```
 
@@ -63,6 +63,221 @@ FROM Production.Product
 WHERE ListPrice > 1000;
 
 ```
+
+
+##  Esercizio 6: Seleziona i primi 10 clienti ordinati per cognome in ordine alfabetico.
+
+
+```
+SELECT TOP 10 FirstName, LastName
+FROM Person.Person
+WHERE BusinessEntityID IN (
+    SELECT BusinessEntityID
+    FROM Sales.Customer
+)
+ORDER BY LastName;
+
+
+```
+
+## Esercizio 7: Seleziona le categorie di prodotto e il numero di prodotti in ciascuna categoria.
+
+```
+
+SELECT PC.Name AS Category, COUNT(*) AS NumberOfProducts
+FROM Production.ProductCategory AS PC
+JOIN Production.ProductSubcategory AS PS ON PC.ProductCategoryID = PS.ProductCategoryID
+JOIN Production.Product AS P ON PS.ProductSubcategoryID = P.ProductSubcategoryID
+GROUP BY PC.Name;
+
+
+```
+
+
+##   Esercizio 8: Seleziona il totale degli ordini effettuati per ogni anno.
+
+```
+SELECT YEAR(OrderDate) AS OrderYear, COUNT(*) AS TotalOrders
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate);
+```
+
+##     Esercizio 9: Seleziona i dipendenti che hanno un cognome che inizia con la lettera 'B'.
+
+```
+SELECT FirstName, LastName
+FROM Person.Person
+WHERE BusinessEntityID IN (
+    SELECT BusinessEntityID
+    FROM HumanResources.Employee
+)
+AND LastName LIKE 'B%';
+
+
+```
+
+## Esercizio 10: Seleziona i prodotti che sono stati venduti in quantità superiore a 10 in un unico ordine.
+```
+SELECT ProductID, Name
+FROM Production.Product
+WHERE ProductID IN (
+    SELECT ProductID
+    FROM Sales.SalesOrderDetail
+    WHERE OrderQty > 10
+);
+
+```
+
+# ROLLBACK
+
+In informatica, il termine "rollback" si riferisce al processo di annullamento di un insieme di transazioni o modifiche al database e di ripristino dello stato del database a un punto precedente nel tempo. Il rollback è una caratteristica fondamentale dei sistemi di gestione dei database che garantisce l'integrità dei dati in caso di errori o fallimenti del sistema.
+
+Ecco come funziona il rollback, in genere, in SQL:
+
+    Inizi una transazione.
+    Esegui una serie di operazioni sul database (come inserimento, aggiornamento o eliminazione).
+    Se tutto va bene, puoi eseguire un commit per rendere le modifiche permanenti.
+    Se qualcosa va storto, esegui un rollback per annullare tutte le modifiche effettuate durante la transazione.
+
+
+
+### Esempio:
+
+Immaginiamo di avere una tabella chiamata Accounts con due colonne: AccountID e Balance.
+
+
+```
+CREATE TABLE Accounts (
+    AccountID INT PRIMARY KEY,
+    Balance DECIMAL(10, 2)
+);
+
+
+```
+
+
+Inseriamo un paio di righe:
+
+```
+INSERT INTO Accounts VALUES (1, 1000.00);
+INSERT INTO Accounts VALUES (2, 2000.00);
+```
+
+
+Ora eseguiamo una transazione che trasferisce denaro da un account all'altro, ma decidiamo di annullarla prima di renderla permanente:
+```
+BEGIN TRANSACTION;
+
+UPDATE Accounts SET Balance = Balance - 100 WHERE AccountID = 1;
+UPDATE Accounts SET Balance = Balance + 100 WHERE AccountID = 2;
+
+-- Immagina che qualcosa sia andato storto (ad es. errore logico, fallimento del sistema, ecc.)
+
+ROLLBACK;
+```
+
+
+
+** ESERCIZI CON ROLLBACK **
+
+Esercizio 1: Prova ad aggiungere un nuovo prodotto alla tabella Production.Product e poi esegui un rollback per annullare l'operazione.
+
+
+```
+BEGIN TRANSACTION;
+
+INSERT INTO Production.Product (Name, ProductNumber, StandardCost, ListPrice, ProductLine)
+VALUES ('New Bike', 'BK-NEW-01', 250, 500, 'M');
+
+ROLLBACK;
+```
+
+
+Esercizio 2: Prova ad aggiornare il prezzo dei prodotti in una categoria specifica, ma poi annulla l'operazione con un rollback.
+```
+BEGIN TRANSACTION;
+
+UPDATE Production.Product
+SET ListPrice = ListPrice * 1.10
+WHERE ProductSubcategoryID IN (
+    SELECT ProductSubcategoryID
+    FROM Production.ProductSubcategory
+    WHERE Name = 'Mountain Bikes'
+);
+
+ROLLBACK;
+
+```
+
+
+Esercizio 3: Prova a trasferire un prodotto da un magazzino ad un altro e poi annulla l'operazione con un rollback.
+
+
+```
+BEGIN TRANSACTION;
+
+DECLARE @ProductID INT = 680;
+DECLARE @FromLocationID INT = 1;
+DECLARE @ToLocationID INT = 5;
+DECLARE @Quantity INT = 10;
+
+UPDATE Production.ProductInventory
+SET Quantity = Quantity - @Quantity
+WHERE ProductID = @ProductID AND LocationID = @FromLocationID;
+
+UPDATE Production.ProductInventory
+SET Quantity = Quantity + @Quantity
+WHERE ProductID = @ProductID AND LocationID = @ToLocationID;
+
+ROLLBACK;
+```
+
+
+
+
+Esercizio 4: Prova ad inserire un nuovo ordine e le relative righe dell'ordine, ma poi esegui un rollback se l'ordine supera un certo importo.
+
+
+```
+BEGIN TRANSACTION;
+
+DECLARE @OrderTotal DECIMAL(10, 2);
+
+INSERT INTO Sales.SalesOrderHeader (CustomerID, OrderDate, DueDate, ShipDate, SalesOrderNumber, SubTotal, TaxAmt)
+VALUES (1, GETDATE(), DATEADD(day, 7, GETDATE()), DATEADD(day, 2, GETDATE()), 'SO99999', 1000, 100);
+
+SET @OrderTotal = 1000;
+
+IF @OrderTotal > 500
+BEGIN
+    ROLLBACK;
+END
+ELSE
+BEGIN
+    INSERT INTO Sales.SalesOrderDetail (SalesOrderID, ProductID, OrderQty, UnitPrice)
+    VALUES (SCOPE_IDENTITY(), 680, 2, 20);
+
+    COMMIT;
+END
+
+
+```
+
+
+Esercizio 5: Prova a eliminare un fornitore dalla tabella Purchasing.Vendor e poi esegui un rollback per annullare l'operazione.
+
+
+```
+BEGIN TRANSACTION;
+
+DELETE FROM Purchasing.Vendor
+WHERE BusinessEntityID = 100;
+
+ROLLBACK;
+```
+
+
+
 
 
 
