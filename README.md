@@ -722,14 +722,65 @@ WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM Sales.SalesOrderDetail);
 Commento: La subquery seleziona tutti i ProductID che sono stati venduti, e la query principale seleziona i prodotti che non sono in quella lista.
 
 
-    Trova i dipendenti che non hanno un manager nello stesso dipartimento.
+
+Trova i dipendenti che non hanno un manager nello stesso dipartimento.
+
+```
+
+SELECT E.BusinessEntityID, E.JobTitle, E.DepartmentID
+FROM HumanResources.Employee AS E
+WHERE NOT EXISTS (SELECT 1
+                  FROM HumanResources.Employee AS M
+                  WHERE M.BusinessEntityID = E.ManagerID
+                  AND M.DepartmentID = E.DepartmentID);
+
+```
+Commento: Questo esercizio utilizza una subquery correlata con NOT EXISTS per trovare i dipendenti il cui manager non appartiene allo stesso dipartimento.
+
+
+
+Trova il totale delle vendite per ogni anno.
+
+```
+SELECT YEAR(OrderDate) AS Year, SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader
+GROUP BY YEAR(OrderDate);
+```
+Commento: Questo non usa una subquery ma è un esempio di aggregazione su una base temporale.
 
 
 
 
+Trova i clienti che hanno speso più della media in ordini nel 2014.
+
+```
+SELECT CustomerID, SUM(TotalDue) AS TotalSpent
+FROM Sales.SalesOrderHeader
+WHERE YEAR(OrderDate) = 2014
+GROUP BY CustomerID
+HAVING SUM(TotalDue) > (SELECT AVG(TotalDue)
+                        FROM Sales.SalesOrderHeader
+                        WHERE YEAR(OrderDate) = 2014);
+
+```
+
+Commento: La subquery calcola la spesa media dei clienti nel 2014, e la query principale seleziona i clienti che hanno speso più della media.
 
 
 
+Trova i nomi dei dipendenti che sono stati assunti nello stesso anno del dipendente con BusinessEntityID = 5.
+
+
+```
+SELECT FirstName, LastName
+FROM Person.Person
+JOIN HumanResources.Employee ON Person.Person.BusinessEntityID = HumanResources.Employee.BusinessEntityID
+WHERE YEAR(HireDate) = (SELECT YEAR(HireDate)
+                        FROM HumanResources.Employee
+                        WHERE BusinessEntityID = 5);
+```
+
+Commento: La subquery trova l'anno di assunzione del dipendente con BusinessEntityID = 5, e la query principale seleziona i nomi dei dipendenti assunti nello stesso anno.
 
 
 
