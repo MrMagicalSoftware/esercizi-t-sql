@@ -495,3 +495,243 @@ WHERE ProductID IN (
 
 
 
+Trova i nomi dei prodotti il cui prezzo è superiore alla media dei prezzi.
+
+```
+SELECT Name, ListPrice
+FROM Production.Product
+WHERE ListPrice > (SELECT AVG(ListPrice) FROM Production.Product);
+```
+
+
+Commento: La subquery calcola la media dei prezzi dei prodotti, e la query principale seleziona i nomi dei prodotti con un prezzo superiore alla media.
+
+
+Trova tutti i clienti che hanno fatto ordini nel 2013.
+
+
+```
+SELECT DISTINCT CustomerID
+FROM Sales.SalesOrderHeader
+WHERE YEAR(OrderDate) = 2013
+AND CustomerID IN (SELECT CustomerID FROM Sales.Customer);
+```
+
+
+Commento: La subquery seleziona tutti i CustomerID dalla tabella Customer, mentre la query principale seleziona i clienti che hanno effettuato ordini nel 2013.
+
+
+
+Trova i dettagli dei prodotti che sono stati venduti in quantità maggiore di 100 unità in un singolo ordine.
+
+
+
+```
+SELECT *
+FROM Production.Product
+WHERE ProductID IN (SELECT ProductID FROM Sales.SalesOrderDetail WHERE OrderQty > 100);
+```
+
+Commento: La subquery seleziona i ProductID che sono stati venduti in quantità superiore a 100, mentre la query principale estrae i dettagli di quei prodotti.
+
+
+
+Trova il totale delle vendite per ogni categoria di prodotto.
+
+```
+SELECT ProductCategoryID, SUM(TotalDue)
+FROM (SELECT Product.ProductCategoryID, SalesOrderDetail.LineTotal AS TotalDue
+      FROM Sales.SalesOrderDetail SalesOrderDetail
+      JOIN Production.Product Product
+      ON SalesOrderDetail.ProductID = Product.ProductID) AS Subquery
+GROUP BY ProductCategoryID;
+```
+
+Commento: Questo utilizza una subquery come tabella derivata per calcolare il totale delle vendite per ogni categoria di prodotto.
+
+
+Trova i clienti che non hanno fatto ordini nel 2014.
+
+```
+SELECT CustomerID
+FROM Sales.Customer
+WHERE CustomerID NOT IN (SELECT DISTINCT CustomerID
+                         FROM Sales.SalesOrderHeader
+                         WHERE YEAR(OrderDate) = 2014);
+```
+
+Commento: La subquery seleziona i CustomerID che hanno fatto ordini nel 2014, e la query principale seleziona quelli che non sono in quella lista.
+
+
+
+Trova il prodotto più costoso in ogni categoria.
+
+```
+SELECT ProductCategoryID, MAX(ListPrice) AS MaxPrice
+FROM Production.Product
+WHERE ListPrice IN (SELECT MAX(ListPrice)
+                    FROM Production.Product
+                    GROUP BY ProductCategoryID)
+GROUP BY ProductCategoryID;
+
+```
+
+Commento: La subquery seleziona il prezzo più alto per ogni categoria, e la query principale estrae il prodotto con quel prezzo in ogni categoria.
+
+
+Trova i fornitori che forniscono almeno 3 prodotti.
+
+
+```
+SELECT ProductVendorID
+FROM Purchasing.ProductVendor
+WHERE ProductVendorID IN (SELECT ProductVendorID
+                          FROM Purchasing.ProductVendor
+                          GROUP BY ProductVendorID
+                          HAVING COUNT(*) >= 3);
+
+```
+
+
+
+Commento: La subquery seleziona i fornitori che forniscono almeno 3 prodotti, e la query principale estrae i dettagli di questi fornitori.
+
+
+
+Trova il totale delle vendite per i clienti che hanno effettuato almeno 2 ordini.
+
+```
+SELECT CustomerID, SUM(TotalDue)
+FROM Sales.SalesOrderHeader
+WHERE CustomerID IN (SELECT CustomerID
+                     FROM Sales.SalesOrderHeader
+                     GROUP BY CustomerID
+                     HAVING COUNT(*) >= 2)
+GROUP BY CustomerID;
+```
+
+
+
+Commento: La subquery seleziona i CustomerID che hanno effettuato almeno 2 ordini, mentre la query principale calcola il totale delle vendite per questi clienti.
+
+Trova il nome della categoria a cui appartiene il prodotto più costoso.
+
+
+```
+SELECT Name
+FROM Production.ProductCategory
+WHERE ProductCategoryID = (SELECT ProductCategoryID
+                           FROM Production.Product
+                           WHERE ListPrice = (SELECT MAX(ListPrice)
+                                              FROM Production.Product));
+```
+
+Commento: Questo esercizio utilizza due subquery annidate. La prima subquery più interna trova il prezzo più alto tra tutti i prodotti, la seconda trova la categoria di quel prodotto e la query principale estrae il nome della categoria.
+
+
+
+Trova i nomi dei dipendenti che hanno lo stesso titolo di lavoro di 'Production Technician - WC60'.
+
+
+```
+SELECT FirstName, LastName
+FROM HumanResources.Employee
+JOIN Person.Person ON HumanResources.Employee.BusinessEntityID = Person.Person.BusinessEntityID
+WHERE JobTitle = (SELECT JobTitle FROM HumanResources.Employee WHERE JobTitle = 'Production Technician - WC60');
+
+```
+
+Commento: La subquery trova il titolo di lavoro 'Production Technician - WC60', e la query principale seleziona i nomi dei dipendenti con quel titolo.
+
+
+
+Trova i fornitori che forniscono solo prodotti di una specifica categoria.
+
+```
+SELECT VendorID
+FROM Purchasing.ProductVendor
+WHERE VendorID NOT IN (SELECT VendorID
+                       FROM Purchasing.ProductVendor
+                       JOIN Production.Product ON Purchasing.ProductVendor.ProductID = Production.Product.ProductID
+                       GROUP BY VendorID
+                       HAVING COUNT(DISTINCT ProductCategoryID) > 1);
+```
+
+Commento: La subquery seleziona i fornitori che forniscono prodotti di più di una categoria, mentre la query principale esclude questi fornitori.
+
+
+
+
+
+Trova le categorie di prodotti che hanno un prezzo medio superiore a $100.
+
+```
+SELECT ProductCategoryID, AVG(ListPrice) AS AvgPrice
+FROM Production.Product
+GROUP BY ProductCategoryID
+HAVING AVG(ListPrice) > 100
+AND ProductCategoryID IN (SELECT ProductCategoryID FROM Production.Product);
+
+```
+Commento: La subquery seleziona tutte le categorie di prodotti, e la query principale calcola il prezzo medio per ogni categoria e seleziona quelle con un prezzo medio superiore a $100.
+
+
+
+Trova il cliente che ha effettuato il maggior numero di ordini.
+
+
+```
+SELECT CustomerID
+FROM Sales.SalesOrderHeader
+GROUP BY CustomerID
+HAVING COUNT(*) = (SELECT MAX(OrdersCount)
+                   FROM (SELECT COUNT(*) AS OrdersCount
+                         FROM Sales.SalesOrderHeader
+                         GROUP BY CustomerID) AS Subquery);
+
+```
+
+
+Commento: La subquery annidata conta il numero di ordini per ogni cliente, e la subquery esterna trova il massimo di questi conteggi. La query principale seleziona il cliente con quel numero di ordini.
+
+
+
+Trova il mese in cui ci sono state le maggiori vendite totali.
+
+```
+SELECT MONTH(OrderDate) AS Month, SUM(TotalDue) AS TotalSales
+FROM Sales.SalesOrderHeader
+GROUP BY MONTH(OrderDate)
+HAVING SUM(TotalDue) = (SELECT MAX(Sales)
+                        FROM (SELECT SUM(TotalDue) AS Sales
+                              FROM Sales.SalesOrderHeader
+                              GROUP BY MONTH(OrderDate)) AS Subquery);
+```
+
+Commento: Simile all'esercizio precedente, ma qui stiamo cercando il mese con le maggiori vendite totali.
+
+
+
+Trova i prodotti che non sono mai stati venduti.
+
+```
+SELECT Name
+FROM Production.Product
+WHERE ProductID NOT IN (SELECT DISTINCT ProductID FROM Sales.SalesOrderDetail);
+```
+Commento: La subquery seleziona tutti i ProductID che sono stati venduti, e la query principale seleziona i prodotti che non sono in quella lista.
+
+
+    Trova i dipendenti che non hanno un manager nello stesso dipartimento.
+
+
+
+
+
+
+
+
+
+
+
+
