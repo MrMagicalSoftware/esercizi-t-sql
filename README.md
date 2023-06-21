@@ -7,6 +7,14 @@ Di seguito sono riportati alcuni esercizi che puoi provare a fare utilizzando il
 
 https://learn.microsoft.com/it-it/sql/samples/adventureworks-install-configure?view=sql-server-ver16&tabs=ssms
 
+
+
+TIPOLOGIE DI JOIN :
+
+https://database.guide/sql-joins-tutorial/
+
+
+
 ##     Esercizio 1: Seleziona tutti i nomi dei prodotti dalla tabella Production.Product.
 
 
