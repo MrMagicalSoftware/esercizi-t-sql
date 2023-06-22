@@ -20,7 +20,7 @@ https://database.guide/sql-joins-tutorial/
 
 ```
 SELECT Name
-FROM Sales.Product;
+FROM SalesLT.Product;
 
 
 ```
