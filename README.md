@@ -785,4 +785,95 @@ Commento: La subquery trova l'anno di assunzione del dipendente con BusinessEnti
 
 
 
+Le stored procedure sono un insieme di istruzioni SQL che sono state salvate e archiviate nel database. Vengono utilizzate per eseguire azioni complesse e ripetitive, e possono essere richiamate quando necessario. Hanno il vantaggio di ridurre il traffico di rete, garantire la sicurezza dei dati, e migliorare la performance.
+
+Esempio di come creare una stored procedure in SQL Server:
+
+```SQL
+CREATE PROCEDURE GetProductByID
+@ProductID int
+AS
+BEGIN
+    SELECT * FROM Products WHERE ProductID = @ProductID;
+END
+```
+
+In questo esempio, la stored procedure `GetProductByID` accetta un parametro di input `@ProductID`, e restituisce tutti i campi per il prodotto con quell'ID.
+
+Per eseguire questa stored procedure, utilizzeresti il seguente comando:
+
+```SQL
+EXEC GetProductByID 123;
+```
+
+Questo esegue la stored procedure `GetProductByID` per il `ProductID` 123.
+
+Per la tua richiesta specifica di esercizi sulla base di dati AdventureWorks 2014, ecco alcuni esempi:
+
+1. Creazione di una stored procedure che restituisce tutti i prodotti di un determinato colore:
+
+```SQL
+CREATE PROCEDURE GetProductsByColor
+@Color nvarchar(15)
+AS
+BEGIN
+    SELECT * FROM Production.Product WHERE Color = @Color;
+END
+```
+Per eseguire questa stored procedure, potresti utilizzare il comando:
+```SQL
+EXEC GetProductsByColor 'Black';
+```
+
+2. Creazione di una stored procedure che restituisce l'ordine con un determinato SalesOrderID:
+
+```SQL
+CREATE PROCEDURE GetOrderByID
+@OrderID int
+AS
+BEGIN
+    SELECT * FROM Sales.SalesOrderHeader WHERE SalesOrderID = @OrderID;
+END
+```
+Per eseguire questa stored procedure, potresti utilizzare il comando:
+```SQL
+EXEC GetOrderByID 43659;
+```
+
+3. Creazione di una stored procedure che aggiorna la quantità di un particolare dettaglio dell'ordine di vendita:
+
+```SQL
+CREATE PROCEDURE UpdateSalesOrderDetailQuantity
+@SalesOrderID int,
+@SalesOrderDetailID int,
+@NewQuantity smallint
+AS
+BEGIN
+    UPDATE Sales.SalesOrderDetail 
+    SET OrderQty = @NewQuantity 
+    WHERE SalesOrderID = @SalesOrderID 
+    AND SalesOrderDetailID = @SalesOrderDetailID;
+END
+```
+Per eseguire questa stored procedure, potresti utilizzare il comando:
+```SQL
+EXEC UpdateSalesOrderDetailQuantity 43659, 1, 5;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
